@@ -95,7 +95,7 @@ def _publish_locomotion(forward: float, lateral: float, angular: float,
     finally:
         if rclpy.ok():
             node.destroy_node()
-            rclpy.shutdown()
+            # 不 shutdown！rclpy 由 main.py 统一管理，重复 shutdown 会清掉全局状态
 
 
 @tool(
