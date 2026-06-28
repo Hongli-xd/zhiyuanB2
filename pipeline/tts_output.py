@@ -47,15 +47,14 @@ class A2TTSProcessor(FrameProcessor):
             await self.push_frame(frame, direction)
             return
 
-        # LLM 流式文本：累积，遇到句末标点就成句播报（降低首字延迟）
+        # LLM 流式文本：只累积，等完全说完再播，避免频繁打断导致卡顿
         if isinstance(frame, (LLMTextFrame, TextFrame)):
             self._buffer += frame.text
-            if any(p in self._buffer for p in "。！？!?\n"):
-                await self._flush()
+            # 不再按标点 flush，等 LLMFullResponseEndFrame 再说
             await self.push_frame(frame, direction)
             return
 
-        # 一轮回复结束，flush 残余
+        # 一轮回复结束，flush 整句
         if isinstance(frame, LLMFullResponseEndFrame):
             await self._flush()
 
@@ -67,5 +66,5 @@ class A2TTSProcessor(FrameProcessor):
         if not text:
             return
 
-        # motion 由 LLM 主动调用 play_motion 工具触发，这里不再自动触发（避免重复）
-        await play_tts(text, interrupt=False)
+        # 整句播报，interrupt=True 打断之前可能残存的任何音频
+        await play_tts(text, interrupt=True)

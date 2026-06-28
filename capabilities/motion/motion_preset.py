@@ -49,9 +49,12 @@ def _fuzzy_match(name: str, candidates: List[str], top_n: int = 3) -> List[Tuple
 
 @tool(
     name="play_motion",
-    description="播放机器人预设动作（如挥手、点头、鞠躬等）。动作名精确匹配预设列表中的名称。",
+    description=(
+        "播放机器人预设动作。可用动作包括：挥手、点头、鞠躬、敬礼、挥手再见、举手、摇摆、踢腿、蹲下、拥抱、摸头、拍桌子、转圈、伸展等共133种。"
+        "动作名精确匹配可用列表，不在列表中的动作会返回最接近的建议。"
+    ),
     properties={
-        "name": {"type": "string", "description": "动作名称（精确匹配动作库）。"},
+        "name": {"type": "string", "description": "动作名称（如：敬礼、点头、鞠躬、挥手、伸手、举手、转圈等）。"},
         "duration_ms": {"type": "integer", "description": "持续时间(毫秒)，默认10000。", "default": 10000},
     },
     required=["name"],
