@@ -48,7 +48,7 @@ AUDIO_CHANNELS = 1
 # ──────────────────────────────────────────────────────────────────────────
 ASR_PROVIDER = os.getenv("ASR_PROVIDER", "funasr")        # "openai" | "whisper" | "funasr"
 # ⚠️ 密钥务必通过环境变量注入，不要写进代码（否则会进 git 历史）。
-ASR_API_KEY = os.getenv("ASR_API_KEY", "")
+ASR_API_KEY = os.getenv("ASR_API_KEY", "sk-e19c26823f0346b1acbc2071705bcb0f")
 # ASR_BASE_URL = os.getenv("ASR_BASE_URL", "https://api.openai.com/v1")
 # ASR_MODEL = os.getenv("ASR_MODEL", "whisper-1")
 ASR_LANGUAGE = os.getenv("ASR_LANGUAGE", "zh")
@@ -65,7 +65,7 @@ FUNASR_LANGUAGE_HINTS = os.getenv("FUNASR_LANGUAGE_HINTS", "zh,en")
 #  LLM 配置
 # ──────────────────────────────────────────────────────────────────────────
 # ⚠️ 密钥务必通过环境变量注入，不要写进代码。
-LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "sk-cp-HT93UTSKgpBYKYbEhTrU2JlSVEFO_6SEXNjQYTYCGZXwhPRCFn9WBt2NEGU9ZIBu7nJqKK3c1oCgBEPH_P7xBM0b9RoedCYi1wq4Q-cUjMYG-gD0NUSH97U")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.minimaxi.com/anthropic")
 LLM_MODEL = os.getenv("LLM_MODEL", "MiniMax-M3")
 
