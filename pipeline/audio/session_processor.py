@@ -96,7 +96,9 @@ class SessionStateProcessor(FrameProcessor):
             self._session.on_speech_activity()
 
         elif isinstance(frame, TranscriptionFrame):
+            log.info("📥 TranscriptionFrame 入: state=%s", self._session.state.value)
             self._session.on_transcription()
+            log.info("📥 TranscriptionFrame 后: state=%s", self._session.state.value)
             # 若处于「等用户表态是否继续任务」阶段，拦截这句话先做意图路由：
             # 只有 OTHER(回答别的问题) 才把转写继续下推给 LLM；
             # RESUME/ABANDON 由任务管理器处理，不应作为普通提问进 LLM。
@@ -112,7 +114,9 @@ class SessionStateProcessor(FrameProcessor):
             self._session.on_interrupt()
 
         elif isinstance(frame, BotStoppedSpeakingFrame):
+            log.info("🔊 BotStoppedSpeakingFrame 入: state=%s", self._session.state.value)
             self._session.on_turn_complete()
+            log.info("🔊 BotStoppedSpeakingFrame 后: state=%s", self._session.state.value)
             # 一轮回答播完：若有挂起任务且这次不是追问本身，则追问是否继续
             if self._task_mgr.has_suspended and not self._expecting_followup_reply:
                 self._loop.create_task(self._followup())
@@ -135,7 +139,9 @@ class SessionStateProcessor(FrameProcessor):
             self._loop.call_soon_threadsafe(self._handle_wakeup)
 
     def _handle_wakeup(self) -> None:
+        old_state = self._session.state
         self._session.on_wakeup()
+        log.info("🔔 唤醒后状态: %s → %s, wakeup_tts=%s", old_state.value, self._session.state.value, self._wakeup_tts)
         # 每次唤醒都说"我在呢"
         if self._wakeup_tts:
             self._loop.create_task(self._say(self._wakeup_tts))

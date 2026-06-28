@@ -57,6 +57,7 @@ class A2TTSProcessor(FrameProcessor):
 
         # 一轮回复结束，flush 整句
         if isinstance(frame, LLMFullResponseEndFrame):
+            log.info("🔊 LLMFullResponseEndFrame 收到, buffer='%s'", self._buffer[:30])
             await self._flush()
 
         await self.push_frame(frame, direction)
@@ -66,8 +67,7 @@ class A2TTSProcessor(FrameProcessor):
         self._buffer = ""
         if not text:
             return
-
-        # 整句播报，interrupt=True 打断之前可能残存的任何音频
+        log.info("🔊 TTS flush: 播放「%s」", text[:50])
         await play_tts(text, interrupt=True)
-        # 通知下游 TTS 播完了（状态机切回 LISTENING）
         await self.push_frame(BotStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
+        log.info("🔊 TTS flush: BotStoppedSpeakingFrame 已发送")

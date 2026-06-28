@@ -86,7 +86,7 @@ class ROS2AudioInputProcessor(FrameProcessor):
                 parent.log.info("唤醒订阅已创建，音频订阅待唤醒后建立")
 
             def _on_wakeup(self, _msg):
-                parent.log.info("🔔 收到唤醒")
+                parent.log.info("🔔 _on_wakeup 触发")
                 # 首次唤醒后建立音频订阅（延迟订阅避免 DDS 匹配失败，见 issues.md #1）
                 if not self._audio_subscribed:
                     self._audio_subscribed = True
@@ -111,7 +111,9 @@ class ROS2AudioInputProcessor(FrameProcessor):
     # ── 音频处理 ──────────────────────────────────────────────────────────
     def _handle_audio(self, msg):
         # 状态门：只有 LISTENING/PROCESSING 才处理（SLEEPING 时丢弃）
-        if not self._session.session.should_process_audio():
+        should = self._session.session.should_process_audio()
+        self.log.info("🎤 音频帧到达, should_process=%s, state=%s", should, self._session.session.state.value)
+        if not should:
             return
         try:
             if getattr(msg, "serialization_type", "pb") != "pb":
@@ -128,10 +130,13 @@ class ROS2AudioInputProcessor(FrameProcessor):
             return
 
         event = self._vad.feed(vad_state, audio)
+        self.log.info("🎤 VAD: state=%d, started=%s, stopped=%s, buf_len=%d",
+                      vad_state, event.started, event.stopped, len(self._vad._buf))
         if event.started:
             self.log.info("🎤 语音开始")
             self._submit(self._emit(UserStartedSpeakingFrame()))
         if event.stopped:
+            self.log.info("🎤 语音停止, utterance=%s", "有" if event.utterance else "无")
             self._submit(self._emit(UserStoppedSpeakingFrame()))
             if event.utterance:
                 self.log.info("🎤 语音结束，送 ASR（%d bytes）", len(event.utterance))
@@ -147,7 +152,9 @@ class ROS2AudioInputProcessor(FrameProcessor):
         await self.push_frame(frame, FrameDirection.DOWNSTREAM)
 
     async def _transcribe_and_push(self, pcm: bytes):
+        self.log.info("📝 ASR 收到音频 %d bytes，开始识别...", len(pcm))
         text, _conf = await self._asr.transcribe(pcm)
+        self.log.info("📝 ASR 识别结果 -> 「%s」", text if text else "(空)")
         if not text:
             self.log.info("⏭️ ASR 未识别到文字")
             return
