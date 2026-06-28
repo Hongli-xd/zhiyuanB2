@@ -28,9 +28,10 @@ log = logging.getLogger("a2.tts_out")
 class A2TTSProcessor(FrameProcessor):
     """累积 LLM 文本帧，整句送 A2 PlayTTS。"""
 
-    def __init__(self):
+    def __init__(self, session=None):
         super().__init__()
         self._buffer = ""
+        self._session = session
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
@@ -69,5 +70,8 @@ class A2TTSProcessor(FrameProcessor):
             return
         log.info("🔊 TTS flush: 播放「%s」", text[:50])
         await play_tts(text, interrupt=True)
+        # 通知 session 切换到 LISTENING，开始接收下一轮
+        if self._session:
+            self._session.on_turn_complete()
         await self.push_frame(BotStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
         log.info("🔊 TTS flush: BotStoppedSpeakingFrame 已发送")
