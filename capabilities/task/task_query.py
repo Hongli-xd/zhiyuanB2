@@ -34,8 +34,11 @@ async def get_task_state(task_id: str) -> Optional[str]:
     res = await get_client().post(f"{TASK_ENGINE_BASE}/GetTask", {"task_id": task_id})
     if not res.ok or not res.json:
         return None
-    data = res.json.get("data") or []
-    for t in data:
+    data = res.json.get("data")
+    # GetTask 返回单个任务对象（非数组），GetAllTasks 返回数组
+    if isinstance(data, dict):
+        return data.get("state") if str(data.get("task_id")) == str(task_id) else None
+    for t in (data or []):
         if str(t.get("task_id")) == str(task_id):
             return t.get("state")
     return None
@@ -46,7 +49,11 @@ async def get_task_name(task_id: str) -> Optional[str]:
     res = await get_client().post(f"{TASK_ENGINE_BASE}/GetTask", {"task_id": task_id})
     if not res.ok or not res.json:
         return None
-    for t in (res.json.get("data") or []):
+    data = res.json.get("data")
+    # GetTask 返回单个任务对象（非数组）
+    if isinstance(data, dict):
+        return data.get("name") if str(data.get("task_id")) == str(task_id) else None
+    for t in (data or []):
         if str(t.get("task_id")) == str(task_id):
             return t.get("name")
     return None
