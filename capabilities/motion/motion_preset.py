@@ -125,15 +125,10 @@ async def play_motion(name: str, duration_ms: int = 10000) -> ToolResult:
             if st.ok and st.json:
                 status = st.json.get("status", "")
                 log.debug("[motion] 状态轮询: status=%s", status)
-                if status in ("MotionCommandStatus_IDLE", "MotionCommandStatus_STOP"):
+                if status == "MotionCommandStatus_IDLE":
                     break
             elapsed += int(poll_interval * 1000)
 
-        return ToolResult.success(
-            f"动作「{name}」已完成播放！",
-            motion_name=name,
-            motion_id=motion_id,
-            duration_s=duration_ms / 1000.0,
-        )
+        return ToolResult.success(f"{name} 已结束")
     finally:
         _running.discard(name)

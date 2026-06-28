@@ -27,14 +27,24 @@ log = logging.getLogger("a2.cap.motion")
 
 STEP_LENGTH = 0.3  # m/step，用于「走N步」换算时长
 
+# 角度转弧度
+_DEG45 = 0.785398   # 45°
+_DEG90 = 1.570796   # 90°
+_MAX_ANGULAR = 1.0  # angular_velocity 上限
+
 _VELOCITY_TABLE = {
-    "stop":          {"forward": 0.0, "lateral": 0.0, "angular": 0.0},
-    "forward":       {"forward": None, "lateral": 0.0, "angular": 0.0},
-    "backward":      {"forward": None, "lateral": 0.0, "angular": 0.0},
-    "left":          {"forward": 0.0, "lateral": 0.0, "angular": 0.9},
-    "right":         {"forward": 0.0, "lateral": 0.0, "angular": -0.9},
-    "left_forward":  {"forward": None, "lateral": 0.0, "angular": 0.9},
-    "right_forward": {"forward": None, "lateral": 0.0, "angular": -0.9},
+    "stop":           {"forward": 0.0, "lateral": 0.0, "angular": 0.0},
+    "forward":        {"forward": None, "lateral": 0.0, "angular": 0.0},
+    "backward":       {"forward": None, "lateral": 0.0, "angular": 0.0},
+    "left":           {"forward": 0.0, "lateral": 0.0, "angular": 0.9},
+    "right":          {"forward": 0.0, "lateral": 0.0, "angular": -0.9},
+    "left_forward":   {"forward": None, "lateral": 0.0, "angular": 0.9},
+    "right_forward":  {"forward": None, "lateral": 0.0, "angular": -0.9},
+    # 精确转向（角度 + 方向）
+    "turn_left_45":  {"forward": 0.0, "lateral": 0.0, "angular": _MAX_ANGULAR, "turn_deg": _DEG45},
+    "turn_right_45": {"forward": 0.0, "lateral": 0.0, "angular": -_MAX_ANGULAR, "turn_deg": _DEG45},
+    "turn_left_90":  {"forward": 0.0, "lateral": 0.0, "angular": _MAX_ANGULAR, "turn_deg": _DEG90},
+    "turn_right_90": {"forward": 0.0, "lateral": 0.0, "angular": -_MAX_ANGULAR, "turn_deg": _DEG90},
 }
 
 
@@ -65,29 +75,42 @@ async def _stop() -> None:
     name="move",
     description=(
         "控制机器人移动方向和步数/距离。直线运动走N步或指定距离后自动停止，"
-        "转向类（原地左/右转）只发指令不计时长。速度默认0.5m/s，用户要求快时提高到0.9m/s。"
+        "转向类用角度精确控制（左转45°、左转90°、右转45°、右转90°）。"
+        "速度默认0.8m/s，用户要求快时提高到0.9m/s。"
     ),
     properties={
         "direction": {
             "type": "string",
             "enum": ["forward", "backward", "left", "right",
-                     "left_forward", "right_forward", "stop"],
-            "description": "forward=前进, backward=后退, left=原地左转, right=原地右转, "
-                           "left_forward=左前方, right_forward=右前方, stop=停止",
+                     "left_forward", "right_forward",
+                     "turn_left_45", "turn_right_45",
+                     "turn_left_90", "turn_right_90",
+                     "stop"],
+            "description": (
+                "forward=前进, backward=后退, "
+                "left/right=原地小幅度转向(约80°), "
+                "left_forward/right_forward=斜向前进, "
+                "turn_left_45/turn_right_45=原地左/右转45°, "
+                "turn_left_90/turn_right_90=原地左/右转90°, "
+                "stop=停止"
+            ),
         },
         "steps": {"type": "integer", "description": "走几步(步长约0.3米)，distance>0时忽略。", "default": 1},
         "distance": {"type": "number", "description": "走多少米，优先级高于steps。"},
-        "speed": {"type": "number", "description": "速度m/s(默认0.5，最大0.9)。", "default": 0.5},
+        "speed": {"type": "number", "description": "速度m/s(默认0.8，最大0.9)。", "default": 0.8},
     },
     required=["direction"],
     concurrency=Concurrency.EXCLUSIVE,
 )
 async def move(
     direction: Literal["forward", "backward", "left", "right",
-                       "left_forward", "right_forward", "stop"] = "stop",
+                       "left_forward", "right_forward",
+                       "turn_left_45", "turn_right_45",
+                       "turn_left_90", "turn_right_90",
+                       "stop"] = "stop",
     steps: int = 1,
     distance: float = 0,
-    speed: float = 0.5,
+    speed: float = 0.8,
 ) -> ToolResult:
     speed = min(speed, 0.9)  # 安全上限
     if distance and distance > 0:
@@ -109,7 +132,18 @@ async def move(
     if direction == "stop" or steps <= 0:
         return ToolResult.success(f"{direction} 指令已发送", direction=direction)
 
-    # 纯转向：发 angular → 等约80° → 停
+    # 精确角度转向：turn_left_45 / turn_left_90 / turn_right_45 / turn_right_90
+    turn_deg = spec.get("turn_deg", 0)
+    if turn_deg > 0:
+        # angular 已知为 ±1.0，duration = 弧度 / |angular|
+        turn_duration = abs(turn_deg / angular)
+        log.info("move 转向 %s, 角度=%.1f°, angular=%.1f, 时长=%.2fs",
+                 direction, turn_deg * 180 / 3.14159, angular, turn_duration)
+        await asyncio.sleep(turn_duration)
+        await _stop()
+        return ToolResult.success(f"{direction} 已转向", direction=direction)
+
+    # 旧版小幅度转向（无精确角度，用 80°）
     if angular != 0 and forward == 0:
         turn_duration = abs(80 / (abs(angular) * 180 / 3.14159))
         log.info("move 转向 %s, 时长=%.1fs", direction, turn_duration)
