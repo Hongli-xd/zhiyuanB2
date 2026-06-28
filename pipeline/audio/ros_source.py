@@ -114,7 +114,8 @@ class ROS2AudioInputProcessor(FrameProcessor):
                 parent._session.notify_wakeup()
 
             def _on_audio(self, msg):
-                parent.log.info("[_on_audio] 收到音频消息 msg.data_len=%d", len(msg.data) if hasattr(msg, 'data') else -1)
+                data_len = len(msg.data) if hasattr(msg, 'data') else -1
+                parent.log.info("[_on_audio] 收到音频消息 data_len=%d", data_len)
                 parent._handle_audio(msg)
 
         node = _DualNode()
