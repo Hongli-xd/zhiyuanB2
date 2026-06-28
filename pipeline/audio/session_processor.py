@@ -135,10 +135,9 @@ class SessionStateProcessor(FrameProcessor):
             self._loop.call_soon_threadsafe(self._handle_wakeup)
 
     def _handle_wakeup(self) -> None:
-        first_time = self._session.state == State.SLEEPING
         self._session.on_wakeup()
-        # 仅在从休眠唤醒时播一句问候（连续对话中重复唤醒不再打扰）
-        if first_time and self._wakeup_tts:
+        # 每次唤醒都说"我在呢"
+        if self._wakeup_tts:
             self._loop.create_task(self._say(self._wakeup_tts))
         # 唤醒时若有任务正在执行，暂停它并进入「中断对话」模式
         self._loop.create_task(self._maybe_interrupt_task())

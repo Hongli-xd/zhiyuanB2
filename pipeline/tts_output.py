@@ -16,6 +16,7 @@ from pipecat.frames.frames import (
     TTSSpeakFrame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
+    BotStoppedSpeakingFrame,
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 
@@ -68,3 +69,5 @@ class A2TTSProcessor(FrameProcessor):
 
         # 整句播报，interrupt=True 打断之前可能残存的任何音频
         await play_tts(text, interrupt=True)
+        # 通知下游 TTS 播完了（状态机切回 LISTENING）
+        await self.push_frame(BotStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
