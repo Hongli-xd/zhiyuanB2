@@ -1,0 +1,44 @@
+2026-06-04 14:03:55.543244064 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+2026-06-04 14:04:01,245 [INFO] a2.rpc: A2Client session 已创建
+2026-06-04 14:04:01,548 [INFO] a2.registry: 已注册工具: set_status_light, launch_aimmaster_task
+2026-06-04 14:04:01.551 | DEBUG    | pipecat.audio.turn.smart_turn.local_smart_turn_v3:__init__:70 - Loading Local Smart Turn v3.x model from /agibot/data/home/agi/Desktop/mydev/lib/python3.10/site-packages/pipecat/audio/turn/smart_turn/data/smart-turn-v3.2-cpu.onnx...
+2026-06-04 14:04:01.722 | DEBUG    | pipecat.audio.turn.smart_turn.local_smart_turn_v3:__init__:81 - Loaded Local Smart Turn v3.x
+2026-06-04 14:04:01.723 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking Pipeline#0::Source -> ROS2AudioInputProcessor#0
+2026-06-04 14:04:01.724 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking ROS2AudioInputProcessor#0 -> LLMUserAggregator#0
+2026-06-04 14:04:01.724 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking LLMUserAggregator#0 -> AnthropicLLMService#0
+2026-06-04 14:04:01.724 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking AnthropicLLMService#0 -> A2TTSProcessor#0
+2026-06-04 14:04:01.724 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking A2TTSProcessor#0 -> LLMAssistantAggregator#0
+2026-06-04 14:04:01.724 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking LLMAssistantAggregator#0 -> Pipeline#0::Sink
+2026-06-04 14:04:01.725 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking PipelineTask#0::Source -> RTVIProcessor#0
+2026-06-04 14:04:01.725 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking RTVIProcessor#0 -> Pipeline#0
+2026-06-04 14:04:01.725 | DEBUG    | pipecat.processors.frame_processor:link:589 - Linking Pipeline#0 -> PipelineTask#0::Sink
+2026-06-04 14:04:01,725 [INFO] a2.main: A2 语音 Agent 启动，等待唤醒… (Ctrl+C 退出)
+2026-06-04 14:04:01.725 | DEBUG    | pipecat.pipeline.runner:run:71 - Runner PipelineRunner#0 started running PipelineTask#0
+2026-06-04 14:04:01.738 | DEBUG    | pipecat.pipeline.task:_wait_for_pipeline_start:745 - PipelineTask#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-06-04 14:04:01,740 [INFO] a2.ros_audio: 等待唤醒...
+2026-06-04 14:04:07,744 [INFO] a2.ros_audio: 🔔 _on_wakeup 被调用！msg=ros2_plugin_proto.msg.RosMsgWrapper(serialization_type='pb', context=['aimrt-pub_ts', '1780553047743313792', 'aimrt-pub_seq', '13', 'aimrt-serialization_type', 'pb'], data=[b'\n', b'\x02', b'z', b'h', b'\x12', b'\x0c', b'\xe5', b'\xb0', b'\x8f', b'\xe6', b'\x9d', b'\xad', b'\xe5', b'\xb0', b'\x8f', 
+2026-06-04 14:04:07,744 [INFO] a2.ros_audio: 🔔 _loop=<_UnixSelectorEventLoop running=True closed=False debug=False>, is_running=True
+2026-06-04 14:04:07,745 [INFO] a2.ros_audio: 🔔 阻塞模式，调度 TTS
+2026-06-04 14:04:07,745 [INFO] a2.ros_audio: 🔔 用 run_coroutine_threadsafe 调度 TTS
+2026-06-04 14:04:07,746 [INFO] a2.ros_audio: ✅✅✅ _do_wakeup_reply 开始执行！
+2026-06-04 14:04:07,746 [INFO] a2.ros_audio: 🎤 进入语音交互模式，_audio_active=True，已订阅音频 topic
+2026-06-04 14:04:07,746 [INFO] a2.ros_audio: ✅ 唤醒成功，TTS 回复『我在呢』
+2026-06-04 14:04:07,756 [INFO] a2.rpc: RPC http://192.168.100.110:59301/rpc/aimdk.protocol.TTSService/PlayTTS -> 200 | {"text":"我在呢","priority_level":"INTERACTION_L6","priority_weight":0,"domain":"voice_agent","trace_id":"agent_6056d68c5c07_6tudargWaCdugEZZTkbEcz","is_sucess":true,"error_message":"","estimated_duration":0}
+2026-06-04 14:04:07,756 [INFO] a2.tts: 🔊 [4/4] TTS 播放 -> 「我在呢」 trace_id=agent_6056d68c5c07
+2026-06-04 14:04:07,756 [INFO] a2.ros_audio: ✅✅✅ TTS 完成（或异常），set wakeup_event
+2026-06-04 14:04:07,756 [INFO] a2.ros_audio: 🎤 进入语音交互模式，pipeline 继续运行
+2026-06-04 14:04:07.759 | DEBUG    | pipecat.pipeline.task:_wait_for_pipeline_start:748 - PipelineTask#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-06-04 14:04:25,573 [INFO] a2.ros_audio: 🔔 _on_wakeup 被调用！msg=ros2_plugin_proto.msg.RosMsgWrapper(serialization_type='pb', context=['aimrt-pub_ts', '1780553065571719264', 'aimrt-pub_seq', '14', 'aimrt-serialization_type', 'pb'], data=[b'\n', b'\x02', b'z', b'h', b'\x12', b'\x0c', b'\xe5', b'\xb0', b'\x8f', b'\xe6', b'\x9d', b'\xad', b'\xe5', b'\xb0', b'\x8f', 
+2026-06-04 14:04:25,573 [INFO] a2.ros_audio: 🔔 _loop=<_UnixSelectorEventLoop running=True closed=False debug=False>, is_running=True
+2026-06-04 14:04:25,573 [INFO] a2.ros_audio: 🔔 阻塞模式，调度 TTS
+2026-06-04 14:04:25,573 [INFO] a2.ros_audio: 🔔 用 run_coroutine_threadsafe 调度 TTS
+2026-06-04 14:04:25,575 [INFO] a2.ros_audio: ✅✅✅ _do_wakeup_reply 开始执行！
+2026-06-04 14:04:25,575 [INFO] a2.ros_audio: 🎤 进入语音交互模式，_audio_active=True，已订阅音频 topic
+2026-06-04 14:04:25,575 [INFO] a2.ros_audio: ✅ 唤醒成功，TTS 回复『我在呢』
+2026-06-04 14:04:25,583 [INFO] a2.rpc: RPC http://192.168.100.110:59301/rpc/aimdk.protocol.TTSService/PlayTTS -> 200 | {"text":"我在呢","priority_level":"INTERACTION_L6","priority_weight":0,"domain":"voice_agent","trace_id":"agent_986ec7ff492c_7ctNSbdr7i6VhQ3RUCcD3G","is_sucess":true,"error_message":"","estimated_duration":0}
+2026-06-04 14:04:25,607 [INFO] a2.tts: 🔊 [4/4] TTS 播放 -> 「我在呢」 trace_id=agent_986ec7ff492c
+2026-06-04 14:04:25,608 [INFO] a2.ros_audio: ✅✅✅ TTS 完成（或异常），set wakeup_event
+2026-06-04 14:04:25,608 [INFO] a2.ros_audio: 🎤 进入语音交互模式，pipeline 继续运行
+
+~~~~~~唤醒后，我说其他话没反应，又说了一次唤醒词，开始又回复“我在呢”

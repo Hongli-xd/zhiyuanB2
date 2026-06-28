@@ -1,0 +1,25 @@
+# 核心框架（锁版本：项目针对 pipecat 0.0.108 的行为打过补丁）
+pipecat-ai==0.0.108
+langgraph>=0.2.0,<0.3.0
+dashscope>=1.20.0
+
+# LLM / HTTP
+anthropic>=0.40.0
+aiohttp>=3.9.0
+yarl>=1.9.0
+websockets>=12.0
+protobuf==3.20.1
+
+# ASR（按 ASR_PROVIDER 选用）
+# 本地 faster-whisper（断网可用）:
+# faster-whisper>=1.0.0
+# numpy>=1.24.0
+
+# A2 / ROS2（仅机器人上需要，pip 装不上，随系统/whl 提供）
+# rclpy                # 来自 ROS2 环境
+# a2_aimdk             # pip install prebuilt/a2_aimdk-2.0.1-py3-none-any.whl
+# ros2_plugin_proto    # source local_setup.bash
+
+# 知识库 RAG（本地嵌入 + 向量检索，断网可用）
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.0
