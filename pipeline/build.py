@@ -80,10 +80,10 @@ def build_pipeline(audio_input_factory):
     llm = build_llm()
     context = build_context()
     aggregators = LLMContextAggregatorPair(context)
-    tts_out = A2TTSProcessor(session=session)
 
     session = SessionStateProcessor(idle_timeout=config.IDLE_TIMEOUT)
     audio_input = audio_input_factory(session)
+    tts_out = A2TTSProcessor(session=session)
 
     pipeline = Pipeline([
         audio_input,            # 音频源：产出 Transcription / Speaking 帧
