@@ -78,7 +78,7 @@ class SessionStateProcessor(FrameProcessor):
         )
 
     @property
-    def task_manager(self) -> TaskInterruptManager:
+    def interrupt_manager(self) -> TaskInterruptManager:
         return self._task_mgr
 
     @property
