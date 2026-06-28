@@ -154,8 +154,11 @@ class SessionStateProcessor(FrameProcessor):
             return
         try:
             from capabilities.task.task_query import find_running_task, get_task_name
+            log.info("[_maybe_interrupt_task] 查找运行中任务...")
             task_id = await find_running_task()
+            log.info("[_maybe_interrupt_task] find_running_task 结果: %s", task_id)
             if not task_id:
+                log.info("[_maybe_interrupt_task] 没有运行中任务，返回")
                 return
             name = await get_task_name(task_id) or ""
             await self._task_mgr.on_wakeup_interrupt(task_id, name)

@@ -55,9 +55,13 @@ async def get_task_name(task_id: str) -> Optional[str]:
 async def find_running_task() -> Optional[str]:
     """从全量任务中找出当前 RUNNING 的 task_id（唤醒打断时用）。"""
     res = await get_client().post(f"{TASK_ENGINE_BASE}/GetAllTasks", {})
+    log.info("[find_running_task] GetAllTasks ok=%s json=%s", res.ok, res.json)
     if not res.ok or not res.json:
         return None
     for t in (res.json.get("data") or []):
         if t.get("state") == RUNNING_OK:
-            return str(t.get("task_id"))
+            tid = str(t.get("task_id"))
+            log.info("[find_running_task] 找到 RUNNING 任务: %s", tid)
+            return tid
+    log.info("[find_running_task] 没有 RUNNING 任务")
     return None
