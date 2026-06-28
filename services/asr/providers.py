@@ -109,7 +109,7 @@ class FunASR(BaseASR):
         self.lang_hints = config.FUNASR_LANGUAGE_HINTS.split(",")
 
     async def transcribe(self, pcm: bytes) -> Tuple[str, Optional[float]]:
-        import asyncio
+        import asyncio, tempfile, os
         wav = _pcm_to_wav(pcm, config.AUDIO_SAMPLE_RATE, 1)
 
         def _run():
@@ -118,13 +118,19 @@ class FunASR(BaseASR):
                 model=self.model, format="wav", sample_rate=config.AUDIO_SAMPLE_RATE,
                 language_hints=self.lang_hints, callback=None,
             )
-            # dashscope 支持传入 bytes 流，免去临时文件
-            result = rec.call(io.BytesIO(wav))
-            if result.status_code == 200:
-                sentences = result.get_sentence() or []
-                if sentences:
-                    return sentences[0].get("text", "").strip(), None
-            return "", None
+            # dashscope.Recognition.call() 只接受文件路径，不接受 BytesIO
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                f.write(wav)
+                tmp_path = f.name
+            try:
+                result = rec.call(tmp_path)
+                if result.status_code == 200:
+                    sentences = result.get_sentence() or []
+                    if sentences:
+                        return sentences[0].get("text", "").strip(), None
+                return "", None
+            finally:
+                os.unlink(tmp_path)
 
         try:
             text, conf = await asyncio.get_event_loop().run_in_executor(None, _run)
