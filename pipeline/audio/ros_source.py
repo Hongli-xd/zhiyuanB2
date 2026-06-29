@@ -116,6 +116,8 @@ class ROS2AudioInputProcessor(FrameProcessor):
             def _on_audio(self, msg):
                 data_len = len(msg.data) if hasattr(msg, 'data') else -1
                 parent.log.info("[_on_audio] 收到音频消息 data_len=%d", data_len)
+                # 打印当前状态
+                parent.log.info("[_on_audio] 当前 state=%s", parent._session.session.state.value)
                 parent._handle_audio(msg)
 
         node = _DualNode()
