@@ -72,6 +72,6 @@ class A2TTSProcessor(FrameProcessor):
         await play_tts(text, interrupt=True)
         # 通知 session 切换到 LISTENING，开始接收下一轮
         if self._session:
-            self._session.on_turn_complete()
+            self._session.session.on_turn_complete()
         await self.push_frame(BotStoppedSpeakingFrame(), FrameDirection.DOWNSTREAM)
         log.info("🔊 TTS flush: BotStoppedSpeakingFrame 已发送")
