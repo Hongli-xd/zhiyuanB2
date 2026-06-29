@@ -49,6 +49,7 @@ class SessionState:
     ):
         self.idle_timeout = idle_timeout
         self._state = State.SLEEPING
+        self._task_running = False  # 任务是否在执行中
         self._on_transition = on_transition or (lambda o, n: None)
         self._on_arm_timer = on_arm_timer or (lambda: None)
         self._on_cancel_timer = on_cancel_timer or (lambda: None)
@@ -56,6 +57,22 @@ class SessionState:
     @property
     def state(self) -> State:
         return self._state
+
+    @property
+    def task_running(self) -> bool:
+        """任务是否在执行中"""
+        return self._task_running
+
+    def set_task_running(self, running: bool) -> None:
+        """设置任务执行状态"""
+        self._task_running = running
+        log.info("任务执行状态: %s", running)
+
+    def clear_task_running(self) -> None:
+        """清除任务执行状态（任务结束或暂停时调用）"""
+        if self._task_running:
+            self._task_running = False
+            log.info("任务执行状态已清除")
 
     def should_process_audio(self) -> bool:
         """ros_source 问它：当前要不要处理音频帧。仅 LISTENING/PROCESSING 时为真。"""

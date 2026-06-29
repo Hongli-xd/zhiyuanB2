@@ -27,6 +27,14 @@ log = logging.getLogger("a2.cap.task_control")
 POLL_INTERVAL = 0.5     # 秒，轮询间隔
 POLL_TIMEOUT = 15.0     # 秒，等待终态的最长时间
 
+# 全局任务状态变化回调，用于通知 session_processor 更新 task_running 状态
+_task_state_callback = None
+
+def set_task_state_callback(cb):
+    """设置任务状态变化回调"""
+    global _task_state_callback
+    _task_state_callback = cb
+
 
 async def _ctrl(task_id: str, ctrl_type: str) -> bool:
     """发一个 CtrlTaskState，返回 RPC 是否成功受理。"""
@@ -63,6 +71,8 @@ async def pause_task(task_id: str) -> ToolResult:
         return ToolResult.fail("暂停指令未受理")
     ok, state = await _poll_until(task_id, PAUSED_OK)
     if ok:
+        if _task_state_callback:
+            _task_state_callback("PAUSED")
         return ToolResult.success("任务已暂停", state=state)
     return ToolResult.fail(f"暂停未完成（当前 {state}）", state=state)
 
@@ -73,6 +83,8 @@ async def resume_task(task_id: str) -> ToolResult:
         return ToolResult.fail("恢复指令未受理")
     ok, state = await _poll_until(task_id, RUNNING_OK)
     if ok:
+        if _task_state_callback:
+            _task_state_callback("RUNNING")
         return ToolResult.success("任务已恢复", state=state)
     return ToolResult.fail(f"恢复未完成（当前 {state}）", state=state)
 
@@ -82,5 +94,7 @@ async def stop_task(task_id: str) -> ToolResult:
     if not await _ctrl(task_id, "Type_STOP"):
         return ToolResult.fail("终止指令未受理")
     ok, state = await _poll_until(task_id, STOPPED_OK)
+    if _task_state_callback:
+        _task_state_callback("STOPPED")
     # STOP 即使没轮询到 STOPPED 也认为已尽力（任务可能直接消失/转 IDLE）
     return ToolResult.success("任务已终止", state=state)

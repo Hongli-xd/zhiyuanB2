@@ -67,9 +67,11 @@ class SessionStateProcessor(FrameProcessor):
         self._expecting_followup_reply = False
 
     def _build_default_task_manager(self, idle_timeout: float) -> TaskInterruptManager:
-        from capabilities.task.task_control import pause_task, resume_task, stop_task
+        from capabilities.task.task_control import pause_task, resume_task, stop_task, set_task_state_callback
         from capabilities.task.intent import classify as classify_intent
         import config
+        # 设置任务状态变化回调
+        set_task_state_callback(self._on_task_state_changed)
         return TaskInterruptManager(
             resume_timeout=getattr(config, "TASK_RESUME_TIMEOUT", 420.0),
             pause_fn=pause_task, resume_fn=resume_task, stop_fn=stop_task,
@@ -84,6 +86,14 @@ class SessionStateProcessor(FrameProcessor):
     @property
     def session(self) -> SessionState:
         return self._session
+
+    # ── 任务状态变化回调 ────────────────────────────────────────────────────
+    def _on_task_state_changed(self, state: str) -> None:
+        """任务状态变化时被 task_control.py 调用"""
+        if state in ("RUNNING",):
+            self._task_mgr.set_task_running(True)
+        elif state in ("PAUSED", "STOPPED", "IDLE"):
+            self._task_mgr.clear_task_running()
 
     # ── 帧处理 ────────────────────────────────────────────────────────────
     async def process_frame(self, frame: Frame, direction: FrameDirection):
@@ -150,6 +160,10 @@ class SessionStateProcessor(FrameProcessor):
 
     async def _maybe_interrupt_task(self) -> None:
         """检测是否有 RUNNING 任务，有则暂停挂起。"""
+        # 只有任务执行中时才暂停
+        if not self._task_mgr.task_running:
+            log.info("[_maybe_interrupt_task] 任务不在执行中，跳过暂停")
+            return
         if self._task_mgr.has_suspended:
             return
         try:

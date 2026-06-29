@@ -53,6 +53,7 @@ class TaskInterruptManager:
         self._suspended: Optional[SuspendedTask] = None
         self._phase = Phase.NONE
         self._timeout_task: Optional[asyncio.Task] = None
+        self._task_running = False  # 任务是否在执行中
 
     @property
     def has_suspended(self) -> bool:
@@ -61,6 +62,22 @@ class TaskInterruptManager:
     @property
     def phase(self) -> Phase:
         return self._phase
+
+    @property
+    def task_running(self) -> bool:
+        """任务是否在执行中"""
+        return self._task_running
+
+    def set_task_running(self, running: bool) -> None:
+        """设置任务执行状态"""
+        self._task_running = running
+        log.info("任务执行状态: %s", running)
+
+    def clear_task_running(self) -> None:
+        """清除任务执行状态"""
+        if self._task_running:
+            self._task_running = False
+            log.info("任务执行状态已清除")
 
     # ── 唤醒打断：暂停当前任务 ─────────────────────────────────────────────
     async def on_wakeup_interrupt(self, task_id: str, task_name: str = "") -> bool:

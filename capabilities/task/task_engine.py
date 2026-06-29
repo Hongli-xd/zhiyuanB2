@@ -42,4 +42,8 @@ async def launch_task(task_id: str) -> bool:
     )
     ok = res.contains("ReturnType_SUCCEED")
     log.info("launch_task(%s) -> %s", task_id, ok)
+    if ok:
+        from capabilities.task.task_control import _task_state_callback
+        if _task_state_callback:
+            _task_state_callback("RUNNING")
     return ok
